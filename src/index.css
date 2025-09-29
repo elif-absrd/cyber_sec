@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Firewall Manager Design System - Dark cybersecurity theme
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Dark theme base colors */
+    --background: 222 20% 8%;
+    --foreground: 210 30% 95%;
+
+    /* Card system */
+    --card: 222 15% 12%;
+    --card-foreground: 210 30% 95%;
+
+    /* Popover system */
+    --popover: 222 20% 10%;
+    --popover-foreground: 210 30% 95%;
+
+    /* Primary - Cyber blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 20% 8%;
+
+    /* Secondary - Dark surface */
+    --secondary: 222 12% 18%;
+    --secondary-foreground: 210 25% 85%;
+
+    /* Muted elements */
+    --muted: 222 10% 22%;
+    --muted-foreground: 210 15% 65%;
+
+    /* Accent - Bright blue */
+    --accent: 217 91% 70%;
+    --accent-foreground: 222 20% 8%;
+
+    /* Security status colors */
+    --success: 142 76% 56%;
+    --success-foreground: 222 20% 8%;
+    
+    --warning: 45 96% 64%;
+    --warning-foreground: 222 20% 8%;
+    
+    --destructive: 0 72% 60%;
+    --destructive-foreground: 210 30% 95%;
+
+    /* Form elements */
+    --border: 222 12% 25%;
+    --input: 222 15% 15%;
+    --ring: 217 91% 60%;
+
+    /* Layout */
+    --radius: 0.75rem;
+
+    /* Sidebar design */
+    --sidebar-background: 222 18% 10%;
+    --sidebar-foreground: 210 25% 85%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 222 20% 8%;
+    --sidebar-accent: 222 15% 16%;
+    --sidebar-accent-foreground: 210 25% 85%;
+    --sidebar-border: 222 12% 20%;
+    --sidebar-ring: 217 91% 60%;
+
+    /* Gradients */
+    --gradient-cyber: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 56%), hsl(142 76% 66%));
+    --gradient-warning: linear-gradient(135deg, hsl(45 96% 64%), hsl(45 96% 74%));
+    --gradient-danger: linear-gradient(135deg, hsl(0 72% 60%), hsl(0 72% 70%));
+
+    /* Shadows */
+    --shadow-cyber: 0 0 20px hsl(217 91% 60% / 0.3);
+    --shadow-success: 0 0 20px hsl(142 76% 56% / 0.3);
+    --shadow-danger: 0 0 20px hsl(0 72% 60% / 0.3);
+    --shadow-card: 0 4px 20px hsl(222 20% 4% / 0.5);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
