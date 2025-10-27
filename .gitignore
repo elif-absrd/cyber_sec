@@ -1,0 +1,244 @@
+# ====================================
+# Project-specific logs
+# ====================================
+*.log
+logs/
+backend.log
+frontend.log
+nohup.out
+
+# ====================================
+# Temporary files
+# ====================================
+*.tmp
+*.swp
+*.bak
+*~
+.cache/
+*.pid
+*.seed
+*.pid.lock
+
+# ====================================
+# OS-specific files
+# ====================================
+.DS_Store
+Thumbs.db
+._*
+.Spotlight-V100
+.Trashes
+
+# ====================================
+# IDE and editor files
+# ====================================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+.fleet/
+
+# ====================================
+# Secrets and sensitive data
+# ====================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+secrets.json
+*.key
+*.pem
+*.crt
+*.p12
+api_keys.txt
+passwords.txt
+config/secrets/
+credentials.json
+
+# ====================================
+# Cybersecurity-specific files
+# ====================================
+*.pcap
+*.cap
+*.pcapng
+*.evtx
+*.hiv
+*.reg
+*.mem
+*.dump
+*.dmp
+*.vmdk
+*.ova
+*.qcow2
+*.iso
+*.img
+*.bin
+*.exe
+*.dll
+*.so
+*.o
+*.a
+*.core
+scans/
+reports/
+exploits/
+payloads/
+
+# ====================================
+# Database files
+# ====================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+db.sqlite3
+
+# ====================================
+# Python Backend
+# ====================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+.python-version
+pythonenv*/
+
+# Python Testing
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.hypothesis/
+*.cover
+*.py,cover
+.cache
+nosetests.xml
+coverage.xml
+*.mo
+*.pot
+
+# Python Type Checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+pyrightconfig.json
+
+# ====================================
+# Frontend (Node.js / React / Vite)
+# ====================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Frontend Build Output
+dist/
+dist-ssr/
+build/
+.next/
+out/
+.nuxt/
+.vite/
+.cache/
+
+# Frontend Lock Files (optional - uncomment to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+bun.lockb
+
+# Frontend Testing
+coverage/
+*.lcov
+.nyc_output/
+
+# Frontend Environment
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ====================================
+# Other Language-Specific Files
+# ====================================
+
+# Ruby
+.bundle/
+*.gem
+vendor/bundle/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+.gradle/
+
+# Go
+*.exe~
+*.test
+*.out
+vendor/
+
+# Rust
+target/
+Cargo.lock
+
+# C/C++
+*.o
+*.a
+*.obj
+*.exe
+
+# ====================================
+# Additional Configurations
+# ====================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent

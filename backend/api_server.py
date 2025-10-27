@@ -1,15 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from firewall_manager import FirewallManager
-from firewall_domain import router as domain_router
+from backend.firewall_manager import FirewallManager
+from backend.firewall_domain import router as domain_router
 
 # Initialize FastAPI once
 app = FastAPI(title="AI Firewall Backend - Kali Integration")
 
-# CORS for your frontend (update allow_origins later)
+# CORS for your frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ],
