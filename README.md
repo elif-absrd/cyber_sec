@@ -52,6 +52,12 @@ bash start-backend.sh
 bash start-frontend.sh
 ```
 
+### Stop Background Server
+
+```bash
+pkill -f "uvicorn backend.api_server:app"
+```
+
 ### Step 4: Access the Dashboard
 
 Open browser: **http://localhost:8080**
