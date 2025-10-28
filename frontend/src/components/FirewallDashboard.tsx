@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { getFirewallStatus, toggleService, togglePort, controlDomain, FirewallRuleResponse } from "../services/firewallAPI";
+import { 
+  getFirewallStatus, 
+  toggleService, 
+  togglePort, 
+  controlDomain, 
+  getBlockedDomains,
+  FirewallRuleResponse 
+} from "../services/firewallAPI";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
@@ -10,10 +17,11 @@ import { Badge } from "./ui/badge";
 const FirewallDashboard: React.FC = () => {
   const [status, setStatus] = useState<string>("Loading...");
   const [loading, setLoading] = useState<boolean>(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error' | 'warning', text: string } | null>(null);
   
   // Domain blocking state
   const [domainInput, setDomainInput] = useState<string>("");
+  const [blockedDomains, setBlockedDomains] = useState<string[]>([]);
   
   // Port blocking state
   const [portInput, setPortInput] = useState<string>("");
@@ -25,14 +33,28 @@ const FirewallDashboard: React.FC = () => {
     } catch (error) {
       console.error(error);
       setStatus("Error fetching status");
-      setMessage({ type: 'error', text: 'Failed to fetch firewall status' });
+    }
+  };
+
+  const fetchBlockedDomains = async () => {
+    try {
+      const data = await getBlockedDomains();
+      if (data.status === 'success') {
+        setBlockedDomains(data.blocked_domains);
+      }
+    } catch (error) {
+      console.error('Failed to fetch blocked domains:', error);
     }
   };
 
   useEffect(() => {
     fetchStatus();
+    fetchBlockedDomains();
     // Auto-refresh every 10 seconds
-    const interval = setInterval(fetchStatus, 10000);
+    const interval = setInterval(() => {
+      fetchStatus();
+      fetchBlockedDomains();
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -40,7 +62,7 @@ const FirewallDashboard: React.FC = () => {
     setLoading(true);
     setMessage(null);
     try {
-      const result = await toggleService(service, action);
+      await toggleService(service, action);
       await fetchStatus();
       setMessage({ 
         type: 'success', 
@@ -57,14 +79,23 @@ const FirewallDashboard: React.FC = () => {
     setLoading(true);
     setMessage(null);
     try {
-      await togglePort(port, action);
+      const result = await togglePort(port, action);
       await fetchStatus();
+      
+      // Check if there's a warning in the response
+      let messageText = `Port ${port} ${action === 'on' ? 'allowed' : 'blocked'} successfully`;
+      if (result.warning) {
+        messageText = `${messageText}\n${result.warning}`;
+      }
+      
       setMessage({ 
-        type: 'success', 
-        text: `Port ${port} ${action === 'on' ? 'allowed' : 'blocked'} successfully` 
+        type: result.warning ? 'warning' : 'success', 
+        text: messageText
       });
     } catch (error: any) {
-      setMessage({ type: 'error', text: error.message });
+      // Handle validation errors from backend
+      const errorMessage = error.response?.data?.detail || error.message;
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -79,12 +110,20 @@ const FirewallDashboard: React.FC = () => {
     setLoading(true);
     setMessage(null);
     try {
-      const result = await controlDomain(domainInput, "block");
+      const result = await controlDomain(domainInput.trim(), "block");
       await fetchStatus();
-      setMessage({ 
-        type: 'success', 
-        text: `Domain ${domainInput} blocked successfully${result.ips ? ` (IPs: ${result.ips.join(', ')})` : ''}` 
-      });
+      await fetchBlockedDomains();
+      
+      if (result.status === 'success') {
+        const domains = result.domains_blocked?.join(', ') || domainInput;
+        const ips = result.total_ips || 0;
+        setMessage({ 
+          type: 'success', 
+          text: `✅ Blocked: ${domains} (${ips} IPs blocked). Close and reopen your browser.` 
+        });
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Failed to block domain' });
+      }
       setDomainInput("");
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message });
@@ -93,8 +132,10 @@ const FirewallDashboard: React.FC = () => {
     }
   };
 
-  const handleUnblockDomain = async () => {
-    if (!domainInput.trim()) {
+  const handleUnblockDomain = async (domain?: string) => {
+    const targetDomain = domain || domainInput.trim();
+    
+    if (!targetDomain) {
       setMessage({ type: 'error', text: 'Please enter a domain name' });
       return;
     }
@@ -102,12 +143,19 @@ const FirewallDashboard: React.FC = () => {
     setLoading(true);
     setMessage(null);
     try {
-      await controlDomain(domainInput, "unblock");
+      const result = await controlDomain(targetDomain, "unblock");
       await fetchStatus();
-      setMessage({ 
-        type: 'success', 
-        text: `Domain ${domainInput} unblocked successfully` 
-      });
+      await fetchBlockedDomains();
+      
+      if (result.status === 'success') {
+        const domains = result.domains_unblocked?.join(', ') || targetDomain;
+        setMessage({ 
+          type: 'success', 
+          text: `✅ Unblocked: ${domains}` 
+        });
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Failed to unblock domain' });
+      }
       setDomainInput("");
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message });
@@ -118,9 +166,38 @@ const FirewallDashboard: React.FC = () => {
 
   const handleCustomPort = async (action: "on" | "off") => {
     const port = parseInt(portInput);
+    
+    // Basic client-side validation
     if (isNaN(port) || port < 1 || port > 65535) {
       setMessage({ type: 'error', text: 'Please enter a valid port number (1-65535)' });
       return;
+    }
+    
+    // Warn about critical ports before blocking
+    if (action === "off") {
+      if (port === 22) {
+        const confirmed = window.confirm(
+          '⚠️  WARNING: Blocking SSH port 22 will prevent remote access!\n\nAre you sure you want to continue?'
+        );
+        if (!confirmed) return;
+      } else if (port === 8000) {
+        setMessage({ 
+          type: 'error', 
+          text: 'Cannot block port 8000 - this will break the firewall backend!' 
+        });
+        return;
+      } else if (port === 8080) {
+        setMessage({ 
+          type: 'error', 
+          text: 'Cannot block port 8080 - this will break the firewall frontend!' 
+        });
+        return;
+      } else if (port < 1024) {
+        const confirmed = window.confirm(
+          `Port ${port} is a privileged/system port.\n\nBlocking it may affect critical services. Continue?`
+        );
+        if (!confirmed) return;
+      }
     }
     
     await handleTogglePort(port, action);
@@ -137,8 +214,25 @@ const FirewallDashboard: React.FC = () => {
       </div>
 
       {message && (
-        <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
-          <AlertDescription>{message.text}</AlertDescription>
+        <Alert 
+          variant={
+            message.type === 'error' ? 'destructive' : 
+            message.type === 'warning' ? 'default' : 
+            'default'
+          }
+          className={
+            message.type === 'warning' ? 'border-yellow-500 bg-yellow-50' :
+            message.type === 'success' ? 'border-green-500 bg-green-50' :
+            ''
+          }
+        >
+          <AlertDescription className={
+            message.type === 'warning' ? 'text-yellow-800' :
+            message.type === 'success' ? 'text-green-800' :
+            ''
+          }>
+            {message.text}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -166,11 +260,13 @@ const FirewallDashboard: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>🌐 Domain Blocking</CardTitle>
-          <CardDescription>Block or unblock websites by domain name</CardDescription>
+          <CardDescription>
+            Block websites by domain. Works with both www.xyz.com and xyz.com automatically.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="domain">Domain Name</Label>
+            <Label htmlFor="domain">Domain Name (e.g., youtube.com or www.youtube.com)</Label>
             <Input
               id="domain"
               type="text"
@@ -190,7 +286,7 @@ const FirewallDashboard: React.FC = () => {
               🚫 Block Domain
             </Button>
             <Button 
-              onClick={handleUnblockDomain} 
+              onClick={() => handleUnblockDomain()} 
               disabled={loading}
               variant="default"
               className="flex-1"
@@ -198,9 +294,31 @@ const FirewallDashboard: React.FC = () => {
               ✅ Unblock Domain
             </Button>
           </div>
-          <div className="text-sm text-muted-foreground">
-            Examples: facebook.com, twitter.com, youtube.com
-          </div>
+          
+          {/* Blocked Domains List */}
+          {blockedDomains.length > 0 && (
+            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <h4 className="font-semibold mb-2 text-red-700 dark:text-red-400">
+                Currently Blocked ({blockedDomains.length})
+              </h4>
+              <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+                {blockedDomains.map((domain) => (
+                  <Badge 
+                    key={domain} 
+                    variant="destructive"
+                    className="cursor-pointer hover:bg-red-600"
+                    onClick={() => handleUnblockDomain(domain)}
+                    title="Click to unblock"
+                  >
+                    {domain} ✕
+                  </Badge>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Click on any domain to unblock it
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

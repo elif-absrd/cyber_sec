@@ -50,15 +50,22 @@ def control_service(service: str, action: str):
 @app.post("/api/firewall/port/{port}/{action}")
 def control_port(port: int, action: str):
     """
+    Control a specific port (blocks both IN and OUT)
     Example: /api/firewall/port/8080/on  or  /api/firewall/port/22/off
+    
+    Validates:
+    - Port range (1-65535)
+    - Critical ports (22, 8000, 8080 cannot be blocked)
+    - Protocol support
     """
-    if action == "on":
-        result = fw.allow_port(port)
-    elif action == "off":
-        result = fw.deny_port(port)
-    else:
-        result = "Invalid action"
-    return {"port": port, "action": action, "result": result}
+    result = fw.toggle_port(port, action)
+    
+    # Handle validation errors
+    if isinstance(result, dict) and not result.get("success"):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    
+    return result
 
 
 # Optional root endpoint
