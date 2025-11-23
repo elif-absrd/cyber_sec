@@ -69,7 +69,7 @@ test_port 65535 "off" "yes" "Maximum valid port 65535"
 echo ""
 echo "=== Testing Privileged Ports (Should warn but allow) ==="
 test_port 80 "off" "yes" "HTTP port 80 (privileged)"
-test_port 443 "off" "yes" "HTTPS port 443 (privileged)"
+test_port 443 "off" "yes" "HTTPS port 443 (privileged)"   
 test_port 21 "off" "yes" "FTP port 21 (privileged)"
 
 echo ""

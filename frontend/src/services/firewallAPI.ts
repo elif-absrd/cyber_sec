@@ -80,3 +80,12 @@ export async function getBlockedDomains(): Promise<BlockedDomainsResponse> {
   if (!res.ok) throw new Error("Failed to fetch blocked domains");
   return res.json();
 }
+
+// Emergency Stop - Reset all firewall rules
+export async function emergencyStop(): Promise<FirewallActionResponse> {
+  const res = await fetch(`${API_BASE}/emergency-stop`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error("Failed to execute emergency stop");
+  return res.json();
+}

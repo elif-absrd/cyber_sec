@@ -68,6 +68,25 @@ def control_port(port: int, action: str):
     return result
 
 
+@app.post("/api/firewall/emergency-stop")
+def emergency_stop():
+    """
+    Emergency Stop - Disable ALL firewall rules
+    WARNING: This will reset UFW and allow all traffic!
+    """
+    result = fw.reset_firewall()
+    # After reset, re-enable UFW with default deny policy for safety
+    fw.run_cmd("sudo ufw --force enable")
+    fw.run_cmd("sudo ufw default deny incoming")
+    fw.run_cmd("sudo ufw default allow outgoing")
+    
+    return {
+        "status": "emergency_stop_executed",
+        "message": "All firewall rules have been reset. UFW is now in default deny mode.",
+        "result": result
+    }
+
+
 # Optional root endpoint
 @app.get("/")
 def root():
